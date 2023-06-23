@@ -1,0 +1,159 @@
+from read import read_data
+from display import display
+import datetime 
+import os
+
+
+GrandTotal=0
+
+#  This Method is for Selling Laptops 
+def sell(billNo):
+    name=input("Enter Costumer's full name : ")
+    address=input("Enter  Costumer's Address : ")
+    contact=input("Enter Costumer's Contact : ")
+    if(len(name) > 0 and len(address) > 0 and len(contact) > 0): 
+            start_Selling(name, address, contact,billNo)
+    else:
+        os.system("cls")
+        print("""
+        !!! Warning !!!
+        Please Fill Out The Information
+        """)
+        input("Press Enter to return ")
+        
+# This Method is for starting selling process and selecting the laptop 
+def start_Selling(customer_Name, customer_Address, customer_Contact,billNo):
+    laptop_data=read_data()
+    display()
+    try:
+        print('Press 0 : Main Menu')
+        print('Press 1-5 : Choose Laptop ')
+        user_choice = input("Enter Your choice here: ")
+        for i in range(len(laptop_data)):
+            if(int(user_choice) == i+1):
+                take_details(customer_Name, customer_Address, customer_Contact,i,billNo)
+        if(user_choice == "0"):
+            return None
+        if(user_choice > str(len(laptop_data)) or user_choice < "0" ):
+                print('Please Enter Choice Properly')
+                input("Press Enter ")
+                start_Selling(customer_Name, customer_Address,customer_Contact, billNo)    
+    except:
+         if(user_choice > str(len(laptop_data)) or user_choice < "0" ):
+            print('Please Enter Choice Properly')
+            input("Press Enter ")
+            start_Selling(customer_Name, customer_Address,customer_Contact, billNo)
+
+#  This Method is for Selling Laptops Billing Process
+def take_details(customer_Name, customer_Address, customer_Contact, sn, billNo):
+    laptop_data=read_data()
+    number = input("Enter number of laptops ")
+    if((int(laptop_data[int(sn)][4]) - int(number)) >=0 and int(number) >0):
+        createSalesBill(customer_Name, customer_Address, customer_Contact,sn,number, billNo)
+        changeStock(sn,number)
+        os.system('cls')
+        sellAgain(customer_Name, customer_Address, customer_Contact, billNo)
+    
+    else:
+        print('Currently Out of Stock')
+        input('Press Enter ')
+        start_Selling
+
+# This Method is for creating the bill
+def createSalesBill(customer_Name, customer_Address, customer_Contact,sn,number, billNo):
+    
+    laptop_data=read_data()
+    datetimeNow=datetime.datetime.now()
+    price=laptop_data[int(sn)][3].replace("$","")
+    total_amount=float(price) * int(number)
+    shipping_cost=500
+    total_after=total_amount+shipping_cost
+    global GrandTotal
+    GrandTotal+=total_after
+    if(os.path.exists(customer_Name + billNo + '_Bill.txt')):
+        with open(customer_Name +billNo + '_Bill.txt',"a") as file:
+            file.write(f"""
++-------------------------------------------------------------------------
+Laptop Name : {laptop_data[int(sn)][1]}
+Laptop Brand : {laptop_data[int(sn)][2]}
+Laptop Price: {laptop_data[int(sn)][3]}
+Quantity: {number}
+
+Shipping Cost:{shipping_cost}
+
+Total Amount (without shipping cost):${total_amount}
+
+Total Amount: ${total_after}
+           """)
+    else:
+        with open(customer_Name+billNo+"_Bill.txt","w") as file:
+            file.write(f"""
+Customer Name: {customer_Name}
+Customer Address: {customer_Address}
+Customer Contact: {customer_Contact}    
+Sold on :{datetimeNow.strftime("%Y-%m-%d")}  {datetimeNow.strftime("%I")}:{datetimeNow.strftime("%M")}
++----------------------------------------------------------------------------------------------------------------------- 
+Laptop Name : {laptop_data[int(sn)][1]}
+Laptop Brand : {laptop_data[int(sn)][2]}
+Laptop Price: {laptop_data[int(sn)][3]}
+Quantity: {number}
+
+Shipping Cost:{shipping_cost}
+Total Amount (without shipping cost):${total_amount}
+
+Total Amount: ${total_after}
+            """)
+
+# This Method is for changing stock
+def changeStock(sn,number):
+    laptop_data=read_data()
+    laptop_data[int(sn)][4]=int(laptop_data[int(sn)][4])-int(number)
+    laptop_data[int(sn)][4]=str(laptop_data[int(sn)][4])
+    file=open('laptops.txt','w')
+    for i in range(len(laptop_data)):
+        for j in range(len(laptop_data[i])):
+            if j==6:
+                file.write(laptop_data[i][j])
+            else:
+                 file.write(laptop_data[i][j]+',')
+        file.write('\n')
+    file.close()
+# This Method is for calculating grand total
+def grandTotal(customer_Name, billNo):
+    global GrandTotal
+    with open(customer_Name +billNo+"_Bill.txt","a")as file:
+        file.write(f"""
++-------------------------------------------------------------------------------        
+       
+Grand Total:{GrandTotal}       
+       """)
+GrandTotal=0
+
+# This Method is for Selling LAptops again
+def sellAgain(customer_Name, customer_Address, customer_Contact, billNo):
+    print(f"""
+1.Buy Again
+2.Stop Buying
+""")
+    userChoice=input("Choose 1 or 2 : ")
+    if(userChoice=="1"):
+        start_Selling(customer_Name, customer_Address, customer_Contact, billNo)
+    elif(userChoice=="2"):
+        os.system("cls")
+        print("Successfully Purchased .....")
+        grandTotal(customer_Name,billNo)
+        with open(customer_Name+billNo+"_Bill.txt","r")as bill:
+                print(bill.read())
+        input("Press Enter to go back")
+    else:
+        print("Error Please Enter Properly ")
+        print("Press Enter to go back")
+        sellAgain(customer_Name, customer_Address, customer_Contact, billNo)
+
+
+def sell_laptops():
+    with open("billno.txt", "r") as billNO:
+        billno = billNO.read()
+    sell(billno)
+    with open("billno.txt", "w") as billNO:
+        billNO.write(str(int(billno)+1))
