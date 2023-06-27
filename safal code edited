@@ -44,7 +44,7 @@ def start_Selling(customer_Name, customer_Address, customer_Contact,billNo):
             input("Press Enter ")
             start_Selling(customer_Name, customer_Address,customer_Contact, billNo)
 
-#  This Method is for Selling Laptops Billing Process
+
 def take_details(customer_Name, customer_Address, customer_Contact, sn, billNo):
     laptop_data=read_data()
     number = input("Enter number of laptops ")
