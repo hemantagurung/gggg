@@ -3,7 +3,7 @@ from display import display
 import datetime 
 import os
 
-
+gg
 GrandTotal=0
 
 #  This Method is for Selling Laptops 
